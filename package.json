@@ -1,0 +1,13 @@
+﻿{
+  "name": "basket-manager",
+  "version": "0.2.0",
+  "description": "Basket Manager - desktop build",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^30.0.0"
+  }
+}

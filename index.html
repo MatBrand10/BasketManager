@@ -1,0 +1,769 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="application-name" content="Basket Manager" />
+  <meta name="apple-mobile-web-app-title" content="Basket Manager" />
+  <title>Basket Manager</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/logo-192.png" />
+  <link rel="apple-touch-icon" href="assets/logo-192.png" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-row">
+          <img src="assets/logo.png" alt="Basket Manager" class="brand-logo" />
+          <h1 data-i18n="app_title">Basket Manager</h1>
+        </div>
+        <span class="subtitle" data-i18n="app_subtitle">Estilo Brasfoot • Foco em decisões</span>
+      </div>
+      <div class="topbar-actions">
+        <div id="team-indicator" class="team-indicator hidden" aria-live="polite"></div>
+        <div id="save-indicator" class="save-indicator hidden" aria-live="polite"></div>
+        <div id="profile-info" class="profile-info"></div>
+        <button id="btn-menu" class="btn" data-i18n="btn_menu">Menu GM</button>
+        <button id="btn-new" class="btn" data-i18n="btn_new_game">Novo Jogo</button>
+        <button id="btn-switch-save" class="btn" type="button">Trocar Save</button>
+        <button id="btn-save" class="btn" data-i18n="btn_save" type="button" onclick="if(window.saveGameNow){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();window.saveGameNow();}">Salvar</button>
+        <button id="btn-load" class="btn" data-i18n="btn_load" type="button" onclick="if(window.loadLatestSave){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();const s=window.loadLatestSave(); if(window.applyLoadedState && window.applyLoadedState(s)) return; if(window.openStartLoad && window.openStartLoad()) return; alert('Nenhum save encontrado.');}">Carregar</button>
+      </div>
+    </header>
+
+    <nav class="tabs" id="main-tabs" role="tablist" aria-label="Navegação principal">
+      <button id="tab-dashboard" class="tab active" role="tab" aria-controls="dashboard" data-view="dashboard" data-i18n="tab_dashboard">Dashboard</button>
+      <button id="tab-roster" class="tab" role="tab" aria-controls="roster" data-view="roster" data-i18n="tab_roster">Elenco</button>
+      <button id="tab-tactics" class="tab" role="tab" aria-controls="tactics" data-view="tactics" data-i18n="tab_tactics">Táticas</button>
+      <button id="tab-games" class="tab" role="tab" aria-controls="games" data-view="games" data-i18n="tab_games">Jogos</button>
+      <button id="tab-finances" class="tab" role="tab" aria-controls="finances" data-view="finances" data-i18n="tab_finances">Finanças</button>
+      <button id="tab-market" class="tab" role="tab" aria-controls="market" data-view="market" data-i18n="tab_market">Mercado</button>
+      <button id="tab-club" class="tab" role="tab" aria-controls="club" data-view="club" data-i18n="tab_club">Clube</button>
+      <button id="tab-training" class="tab" role="tab" aria-controls="training" data-view="training" data-i18n="tab_training">Treino</button>
+      <button id="tab-national" class="tab" role="tab" aria-controls="national" data-view="national" data-i18n="tab_national">Seleções</button>
+    </nav>
+
+    <main>
+      <section id="dashboard" class="view active" role="tabpanel" aria-labelledby="tab-dashboard">
+        <div class="grid two">
+          <div class="card">
+            <h2 data-i18n="h_summary">Resumo</h2>
+            <div id="summary"></div>
+          </div>
+          <div class="card">
+            <h2 data-i18n="h_next_game">Próximo Jogo</h2>
+            <div id="next-game"></div>
+            <div class="stack">
+              <button id="btn-sim-next" class="btn primary" data-i18n="btn_sim_live">Simular Ao Vivo</button>
+              <button id="btn-sim-week" class="btn" data-i18n="btn_sim_week">Simular 7 Dias</button>
+              <button id="btn-advance-season" class="btn" data-i18n="btn_advance_season">Iniciar Nova Temporada</button>
+            </div>
+          </div>
+        </div>
+
+        <details class="section" open>
+          <summary data-i18n="h_league_overview">Visão da Liga</summary>
+          <div class="grid two">
+            <div class="card">
+              <h2 data-i18n="h_standings">Classificação</h2>
+              <div id="standings"></div>
+            </div>
+            <div class="card">
+              <h2 data-i18n="h_objectives">Objetivos da Diretoria</h2>
+              <div id="objectives"></div>
+            </div>
+          </div>
+        </details>
+
+        <details class="section" open>
+          <summary data-i18n="h_feedback_health">Feedback e Saúde</summary>
+          <div class="grid two">
+            <div class="card">
+              <h2 data-i18n="h_messages">Mensagens</h2>
+              <div id="messages" class="log" aria-live="polite"></div>
+            </div>
+            <div class="card">
+              <h2 data-i18n="h_health">Status Físico</h2>
+              <div id="health"></div>
+            </div>
+          </div>
+        </details>
+
+        <details class="section">
+          <summary data-i18n="h_analytics">Analytics</summary>
+          <div class="stack">
+            <div class="card">
+              <h2 data-i18n="h_season_leaders">Líderes da Temporada</h2>
+              <div id="season-leaders"></div>
+            </div>
+            <div class="card">
+              <h2 data-i18n="h_advanced_league">Ranking Avançado</h2>
+              <div id="advanced-league"></div>
+            </div>
+            <div class="card">
+              <h2 data-i18n="h_performance">Performance</h2>
+              <div id="performance-panel"></div>
+            </div>
+            <div class="card">
+              <h2 data-i18n="h_minutes_panel">Minutos do Elenco</h2>
+              <div id="minutes-panel"></div>
+            </div>
+            <div class="card">
+              <h2 data-i18n="h_season_recap">Resumo da Temporada</h2>
+              <div id="season-recap"></div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section id="roster" class="view" role="tabpanel" aria-labelledby="tab-roster">
+        <div class="card">
+          <h2 data-i18n="h_roster">Elenco</h2>
+          <div class="row roster-controls">
+            <label class="field">
+              <span data-i18n="label_roster_sort">Ordenar por</span>
+              <select id="roster-sort" class="select">
+                <option value="ovr" data-i18n="sort_ovr">OVR</option>
+                <option value="age" data-i18n="sort_age">Idade</option>
+                <option value="potential" data-i18n="sort_potential">Potencial</option>
+                <option value="salary" data-i18n="sort_salary">Salário</option>
+                <option value="morale" data-i18n="sort_morale">Moral</option>
+              </select>
+            </label>
+            <label class="field">
+              <span data-i18n="label_roster_filter">Filtrar posição</span>
+              <select id="roster-filter" class="select">
+                <option value="all" data-i18n="option_all">Todos</option>
+                <option value="PG">PG</option>
+                <option value="SG">SG</option>
+                <option value="SF">SF</option>
+                <option value="PF">PF</option>
+                <option value="C">C</option>
+              </select>
+            </label>
+          </div>
+          <div id="roster-table"></div>
+        </div>
+      </section>
+
+      <section id="tactics" class="view" role="tabpanel" aria-labelledby="tab-tactics">
+        <div class="grid two">
+          <div class="card">
+            <h2 data-i18n="h_formations">Formações</h2>
+            <div id="formation-options" class="stack"></div>
+          </div>
+          <div class="card">
+            <h2 data-i18n="h_strategies">Estratégias</h2>
+            <div id="strategy-options" class="stack"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2 data-i18n="h_rotation">Rotação</h2>
+          <div id="rotation"></div>
+        </div>
+        <div class="card">
+          <h2 data-i18n="h_tactics_board">Quadra Tática</h2>
+          <button id="btn-auto-lineup" class="btn" data-i18n="btn_auto_lineup">Auto escalar</button>
+          <div id="tactics-board" class="tactics-board"></div>
+          <div class="bench-title" data-i18n="h_bench">Banco</div>
+          <div id="bench-board" class="bench-board" data-slot="bench"></div>
+          <div class="muted" data-i18n="hint_drag_drop">Arraste jogadores para ajustar as posições.</div>
+        </div>
+      </section>
+
+      <section id="games" class="view" role="tabpanel" aria-labelledby="tab-games">
+        <div class="grid two">
+          <div class="card">
+            <h2 data-i18n="h_schedule">Calendário</h2>
+            <div id="schedule"></div>
+            <label class="field">
+              <span data-i18n="label_watch_all">Acompanhar rodada completa</span>
+              <input id="watch-all" type="checkbox" />
+            </label>
+          </div>
+          <div class="card">
+            <h2 data-i18n="h_live_sim">Simulação Ao Vivo</h2>
+            <div id="live-sim" class="log" aria-live="polite"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2 data-i18n="h_playoffs">Playoffs</h2>
+          <div id="playoffs"></div>
+        </div>
+      </section>
+
+      <section id="finances" class="view" role="tabpanel" aria-labelledby="tab-finances">
+        <div class="grid two">
+          <div class="card">
+            <h2 data-i18n="h_finances">Finanças</h2>
+            <div id="finance"></div>
+          </div>
+          <div class="card">
+            <h2 data-i18n="h_contracts">Contratos</h2>
+            <div id="contracts"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="market" class="view" role="tabpanel" aria-labelledby="tab-market">
+        <div class="grid two">
+          <div class="card">
+            <h2 data-i18n="h_free_agents">Agentes Livres</h2>
+            <div id="free-agents"></div>
+          </div>
+          <div class="card">
+            <h2 data-i18n="h_negotiation">Negociação</h2>
+            <div id="negotiation"></div>
+          </div>
+        </div>
+        <div class="grid two">
+          <div class="card">
+            <h2 data-i18n="h_trades">Trocas</h2>
+            <div id="trades"></div>
+          </div>
+          <div class="card">
+            <h2 data-i18n="h_draft">Draft</h2>
+            <div id="draft"></div>
+            <div class="stack">
+              <button id="btn-generate-draft" class="btn" data-i18n="btn_generate_draft">Gerar Draft</button>
+              <button id="btn-sim-draft" class="btn" data-i18n="btn_sim_draft">Simular Draft</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h2 data-i18n="h_extensions">Renovações</h2>
+          <div id="extensions"></div>
+        </div>
+      </section>
+
+      <section id="club" class="view" role="tabpanel" aria-labelledby="tab-club">
+        <div class="grid two">
+          <div class="card">
+            <h2 data-i18n="h_facilities">Instalações</h2>
+            <div id="facilities"></div>
+          </div>
+          <div class="card">
+            <h2 data-i18n="h_planning">Planejamento</h2>
+            <div id="longterm"></div>
+          </div>
+        </div>
+        <div class="grid two">
+          <div class="card">
+            <h2 data-i18n="h_staff">Comissão Técnica</h2>
+            <div id="staff"></div>
+          </div>
+          <div class="card">
+            <h2 data-i18n="h_gm_skills">Habilidades do GM</h2>
+            <div id="gm-skills"></div>
+          </div>
+        </div>
+        <div class="grid two">
+          <div class="card">
+            <h2 data-i18n="h_sponsors">Patrocínios</h2>
+            <div id="sponsors"></div>
+          </div>
+          <div class="card">
+            <h2 data-i18n="h_scouting">Scouting Avançado</h2>
+            <div id="scouting"></div>
+          </div>
+        </div>
+        <div class="grid two">
+          <div class="card">
+            <h2 data-i18n="h_awards">Premiações</h2>
+            <div id="awards"></div>
+          </div>
+          <div class="card">
+            <h2 data-i18n="h_rivalries">Rivalidades</h2>
+            <div id="rivalries"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2 data-i18n="h_hall_fame">Hall da Fama</h2>
+          <div id="hall-fame"></div>
+        </div>
+        <div class="card">
+          <h2 data-i18n="h_season_history">Histórico de Temporadas</h2>
+          <div id="season-history"></div>
+        </div>
+        <div class="card">
+          <h2 data-i18n="h_market_history">Histórico de Mercado</h2>
+          <div id="market-history"></div>
+        </div>
+        <div class="card">
+          <h2 data-i18n="h_world_playoffs">Playoffs Globais</h2>
+          <div id="world-playoffs"></div>
+        </div>
+      </section>
+
+      <section id="training" class="view" role="tabpanel" aria-labelledby="tab-training">
+        <div class="grid two">
+          <div class="card">
+            <h2 data-i18n="h_training">Treinamento</h2>
+            <div id="training-center"></div>
+          </div>
+          <div class="card">
+            <h2 data-i18n="h_progression">Progressão</h2>
+            <div id="progression"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="national" class="view" role="tabpanel" aria-labelledby="tab-national">
+        <div class="grid two">
+          <div class="card">
+            <h2 data-i18n="h_national_calendar">Calendário Internacional</h2>
+            <div id="national-calendar"></div>
+          </div>
+          <div class="card">
+            <h2 data-i18n="h_national_history">Últimos Campeões</h2>
+            <div id="national-history"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div data-i18n="footer_offline">Modo offline • Salvamento em localStorage</div>
+      <div id="save-status"></div>
+    </footer>
+  </div>
+
+  <div id="start-screen" class="overlay" role="dialog" aria-modal="true" aria-hidden="false">
+    <div class="modal">
+      <div class="stack">
+        <img src="assets/logo.png" alt="Basket Manager" class="login-logo" />
+        <h2 data-i18n="h_start_title">Basket Manager</h2>
+        <div class="muted" data-i18n="h_start_subtitle">Modo carreira • Escolha seu caminho</div>
+        <button id="btn-start-load" class="btn" data-i18n="btn_start_load" type="button" onclick="if(window.openStartLoad || window.openTeamSelection){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();if(window.openStartLoad){if(window.openStartLoad()) return;} if(window.openTeamSelection){window.openTeamSelection();}}">Entrar / Carregar Save</button>
+        <button id="btn-start-new" class="btn primary" data-i18n="btn_start_new" type="button" onclick="if(window.openTeamSelection){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();window.openTeamSelection();}">Novo Jogo</button>
+        <button id="btn-start-franchise" class="btn" data-i18n="btn_start_franchise" type="button" onclick="if(window.openTeamSelection){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();window.openTeamSelection();}">Iniciar Franquia</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal selection-modal">
+      <div class="selection-head">
+        <h2 data-i18n="h_team_pick">Escolha Seu Time</h2>
+        <div class="field">
+          <span data-i18n="label_league">Liga</span>
+          <div id="league-cards" class="league-cards"></div>
+          <select id="league-select" class="select visually-hidden" aria-hidden="true" tabindex="-1"></select>
+        </div>
+        <div class="field">
+          <span data-i18n="label_team_filter">Filtrar times</span>
+          <div class="filter-row">
+            <input id="team-filter" class="input" type="text" data-i18n-placeholder="placeholder_team_filter" placeholder="Cidade ou apelido" />
+            <button id="btn-clear-filter" class="btn" data-i18n="btn_clear_filter">Limpar</button>
+          </div>
+        </div>
+      </div>
+      <div class="selection-body">
+        <details id="franchise-accordion" class="accordion" open>
+          <summary>
+            <span class="badge" data-i18n="label_new_franchise">Nova franquia</span>
+            <span class="muted" data-i18n="label_new_franchise_help">Crie um time do zero.</span>
+          </summary>
+          <div class="stack">
+            <label class="field">
+              <span data-i18n="label_city">Cidade</span>
+              <input id="franchise-city" class="input" type="text" placeholder="Ex: Santos" />
+            </label>
+            <label class="field">
+              <span data-i18n="label_nickname">Apelido</span>
+              <input id="franchise-nickname" class="input" type="text" placeholder="Ex: Sharks" />
+            </label>
+            <div class="row">
+              <label class="field">
+                <span data-i18n="label_primary">Cor Primária</span>
+                <input id="franchise-primary" class="input" type="text" placeholder="#4cc3ff" />
+              </label>
+              <label class="field">
+                <span data-i18n="label_secondary">Cor Secundária</span>
+                <input id="franchise-secondary" class="input" type="text" placeholder="#ffb347" />
+              </label>
+            </div>
+            <div class="row">
+              <button id="btn-create-franchise" class="btn" data-i18n="btn_create_franchise">Criar Franquia</button>
+              <button id="btn-delete-franchise" class="btn danger" data-i18n="btn_delete_franchise">Excluir Franquia</button>
+            </div>
+          </div>
+        </details>
+        <div id="team-picker" class="team-picker"></div>
+        <div class="card">
+          <h3 data-i18n="h_team_preview">Prévia do Time</h3>
+          <div id="team-preview" class="team-preview"></div>
+        </div>
+        <button id="btn-start" class="btn primary" data-i18n="btn_start">Começar Carreira</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="login-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal">
+      <img src="assets/logo.png" alt="Basket Manager" class="login-logo" />
+      <h2 data-i18n="h_login">Login do GM</h2>
+      <div class="stack">
+        <label>
+          <span data-i18n="label_manager_name">Nome do manager</span>
+          <input id="manager-name" class="input" type="text" placeholder="Ex: Alex GM" />
+        </label>
+        <label class="field">
+          <span data-i18n="label_login_quick">Entrar ao clicar no perfil</span>
+          <div class="row">
+            <input id="login-quick" type="checkbox" checked />
+            <span class="muted" data-i18n="label_login_quick_help">Desative para apenas selecionar o perfil e escolher o save.</span>
+          </div>
+        </label>
+        <div>
+          <div class="muted" data-i18n="label_profiles">Perfis salvos</div>
+          <div id="profile-list" class="stack"></div>
+        </div>
+        <div class="card">
+          <h3 data-i18n="h_login_saves">Carreiras do perfil</h3>
+          <label class="field">
+            <span data-i18n="label_login_save_slot">Carreira</span>
+            <select id="login-save-slot" class="select"></select>
+          </label>
+          <div class="row">
+            <button id="btn-login-load-save" class="btn" data-i18n="btn_login_load_save">Carregar Save</button>
+            <button id="btn-login-delete-save" class="btn danger" data-i18n="btn_login_delete_save">Excluir Save</button>
+          </div>
+          <div class="muted" data-i18n="label_login_saves_hint">Selecione um perfil acima ou digite um nome.</div>
+        </div>
+        <button id="btn-login" class="btn primary" data-i18n="btn_login">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="menu-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal">
+      <h2 data-i18n="h_menu">Menu do GM</h2>
+      <div class="stack">
+        <button id="btn-menu-save" class="btn" data-i18n="btn_menu_save">Salvar Agora</button>
+        <button id="btn-menu-load" class="btn" data-i18n="btn_menu_load">Carregar Perfil</button>
+        <button id="btn-menu-new" class="btn" data-i18n="btn_menu_new">Novo Jogo</button>
+        <button id="btn-menu-logout" class="btn danger" data-i18n="btn_menu_logout">Sair do Perfil</button>
+        <label class="field">
+          <span data-i18n="label_language">Idioma</span>
+          <select id="language-select" class="select">
+            <option value="pt">Português</option>
+            <option value="en">English</option>
+            <option value="es">Español</option>
+          </select>
+        </label>
+        <label class="field">
+          <span data-i18n="label_fan_tolerance">Sensibilidade da torcida</span>
+          <input id="fan-tolerance" class="input" type="range" min="0.8" max="1.2" step="0.05" value="1" />
+          <div class="muted" data-i18n="label_fan_tolerance_help">Maior valor = torcida mais tolerante.</div>
+          <div class="badge" id="fan-tolerance-value">1.00x</div>
+        </label>
+        <label class="field">
+          <span data-i18n="label_compact_mode">Modo compacto</span>
+          <div class="row">
+            <input id="compact-mode" type="checkbox" />
+            <span class="muted" data-i18n="label_compact_mode_help">Otimiza o layout para telas pequenas.</span>
+          </div>
+        </label>
+        <label class="field">
+          <span data-i18n="label_performance_mode">Modo performance</span>
+          <div class="row">
+            <input id="performance-mode" type="checkbox" />
+            <span class="muted" data-i18n="label_performance_mode_help">Reduz efeitos e acelera simulações.</span>
+          </div>
+        </label>
+        <div class="card">
+          <h3 data-i18n="h_audio">Áudio</h3>
+          <label class="field">
+            <span data-i18n="label_music">Música</span>
+            <input id="music-toggle" type="checkbox" />
+          </label>
+          <label class="field">
+            <span data-i18n="label_music_volume">Volume da música</span>
+            <input id="music-volume" class="input" type="range" min="0" max="1" step="0.05" value="0.35" />
+          </label>
+          <label class="field">
+            <span data-i18n="label_music_track">Trilha</span>
+            <select id="music-track" class="select"></select>
+          </label>
+          <label class="field">
+            <span data-i18n="label_sfx">Efeitos</span>
+            <input id="sfx-toggle" type="checkbox" />
+          </label>
+          <label class="field">
+            <span data-i18n="label_sfx_volume">Volume dos efeitos</span>
+            <input id="sfx-volume" class="input" type="range" min="0" max="1" step="0.05" value="0.6" />
+          </label>
+          <label class="field">
+            <span data-i18n="label_ambient">Ambiência</span>
+            <input id="ambient-toggle" type="checkbox" />
+          </label>
+          <label class="field">
+            <span data-i18n="label_ambient_volume">Volume da ambiência</span>
+            <input id="ambient-volume" class="input" type="range" min="0" max="1" step="0.05" value="0.2" />
+          </label>
+        </div>
+        <div class="card">
+          <h3 data-i18n="h_playlist">Playlist</h3>
+          <div id="music-playlist"></div>
+        </div>
+        <div class="card">
+          <h3 data-i18n="h_diagnostics">Diagnóstico</h3>
+          <button id="btn-run-tests" class="btn" data-i18n="btn_run_tests">Rodar testes</button>
+          <div class="muted" data-i18n="label_tests_hint">Executa checagens rápidas do sistema.</div>
+        </div>
+        <div class="card">
+          <h3 data-i18n="h_hotseat">Hotseat</h3>
+          <label class="field">
+            <span data-i18n="label_hotseat_name">Nome do GM</span>
+            <input id="hotseat-name" class="input" type="text" placeholder="Ex: GM 2" />
+          </label>
+          <label class="field">
+            <span data-i18n="label_hotseat_team">Time</span>
+            <select id="hotseat-team" class="select"></select>
+          </label>
+          <button id="btn-hotseat-add" class="btn" data-i18n="btn_hotseat_add">Adicionar GM</button>
+          <div id="hotseat-list" class="stack"></div>
+        </div>
+        <div class="card">
+          <h3 data-i18n="h_careers">Carreiras</h3>
+          <label class="field">
+            <span data-i18n="label_save_slot">Carreira ativa</span>
+            <select id="save-slot" class="select"></select>
+          </label>
+          <div class="row">
+            <button id="btn-save-slot-load" class="btn" data-i18n="btn_save_slot_load">Carregar</button>
+            <button id="btn-save-slot-new" class="btn" data-i18n="btn_save_slot_new">Novo Slot</button>
+          </div>
+          <div class="row">
+            <button id="btn-save-export" class="btn" data-i18n="btn_save_export">Exportar</button>
+            <button id="btn-save-import" class="btn" data-i18n="btn_save_import">Importar</button>
+            <button id="btn-save-backup" class="btn" data-i18n="btn_save_backup">Backup</button>
+            <button id="btn-save-delete" class="btn danger" data-i18n="btn_save_delete">Excluir</button>
+          </div>
+          <input id="save-import-file" class="visually-hidden" type="file" accept="application/json" />
+        </div>
+        <button id="btn-apply-language" class="btn" data-i18n="btn_apply_language">Aplicar idioma</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="hotseat-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal">
+      <h2 data-i18n="h_hotseat_turn">Troca de GM</h2>
+      <div class="stack">
+        <div id="hotseat-next" class="badge primary"></div>
+        <button id="btn-hotseat-continue" class="btn primary" data-i18n="btn_hotseat_continue">Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="live-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-live="polite" aria-hidden="true">
+    <div class="modal">
+      <h2 data-i18n="h_live_center">Central Ao Vivo</h2>
+      <div id="live-banner" class="live-banner"></div>
+      <div id="live-loading" class="live-loading hidden" data-i18n="msg_live_loading">Carregando simulação...</div>
+      <div id="live-scoreboard" class="live-scoreboard" aria-live="polite">
+        <div class="live-team" id="live-home">
+          <div id="live-home-logo"></div>
+          <div>
+            <div class="live-team-name" id="live-home-name">-</div>
+            <div class="live-team-meta" id="live-home-meta">TO 7 • F 0</div>
+          </div>
+        </div>
+        <div class="live-score">
+          <div class="live-score-value" id="live-home-score">0</div>
+          <div class="live-score-sep">x</div>
+          <div class="live-score-value" id="live-away-score">0</div>
+        </div>
+        <div class="live-meta">
+          <div id="live-quarter">Q1</div>
+          <div id="live-clock">12:00</div>
+        </div>
+        <div class="live-team" id="live-away">
+          <div id="live-away-logo"></div>
+          <div>
+            <div class="live-team-name" id="live-away-name">-</div>
+            <div class="live-team-meta" id="live-away-meta">TO 7 • F 0</div>
+          </div>
+        </div>
+      </div>
+      <div class="live-progress">
+        <div class="live-progress-bar" id="live-progress-bar"></div>
+        <div class="live-progress-label" id="live-progress-label">Q1 • 12:00</div>
+      </div>
+      <div class="live-momentum">
+        <div class="live-momentum-label" data-i18n="label_momentum">Momento</div>
+        <canvas id="live-momentum" width="600" height="80"></canvas>
+      </div>
+      <div class="live-efficiency">
+        <div class="live-momentum-label" data-i18n="label_efficiency">Eficiência por quarto</div>
+        <canvas id="live-efficiency" width="600" height="90"></canvas>
+      </div>
+      <div id="live-overlay-log" class="log" aria-live="polite"></div>
+      <div id="live-advanced" class="live-advanced"></div>
+      <div id="live-fouls" class="live-fouls"></div>
+      <div id="live-potg" class="live-potg hidden"></div>
+      <div id="live-highlights" class="live-highlights hidden"></div>
+      <div class="stack">
+        <div class="live-controls">
+          <div class="badge">Velocidade</div>
+          <div id="live-speed-controls" class="live-speed-controls">
+            <button class="btn" data-speed="0.5">0.5x</button>
+            <button class="btn" data-speed="1">1x</button>
+            <button class="btn" data-speed="2">2x</button>
+            <button class="btn" data-speed="4">4x</button>
+          </div>
+          <div id="live-speed-value" class="muted">1x</div>
+        </div>
+        <button id="btn-live-skip" class="btn" data-i18n="btn_live_skip">Pular Simulação</button>
+        <button id="btn-live-tv" class="btn" data-i18n="btn_live_tv">Modo TV</button>
+        <button id="btn-live-close" class="btn" data-i18n="btn_live_close">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const byId = (id) => document.getElementById(id);
+      const start = byId('start-screen');
+      const login = byId('login-overlay');
+      const team = byId('overlay');
+      const leagueCards = byId('league-cards');
+      const teamPicker = byId('team-picker');
+      const teamPreview = byId('team-preview');
+      const errorBanner = document.createElement('div');
+      errorBanner.id = 'bm-error-banner';
+      errorBanner.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;padding:10px 12px;background:#b42318;color:#fff;font:14px/1.4 sans-serif;border-radius:10px;z-index:1000;display:none;';
+      document.body.appendChild(errorBanner);
+      const show = (el) => {
+        if (!el) return;
+        el.classList.remove('hidden');
+        el.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('overlay-open');
+      };
+      const hide = (el) => {
+        if (!el) return;
+        el.classList.add('hidden');
+        el.setAttribute('aria-hidden', 'true');
+      };
+      const openLogin = () => {
+        hide(start);
+        show(login);
+      };
+      const openTeams = () => {
+        hide(start);
+        hide(login);
+        show(team);
+        if (window.scheduleTeamPickerRender) {
+          window.scheduleTeamPickerRender(true);
+        } else {
+          window.__bmPendingTeamRender = true;
+          renderFallbackSelection();
+        }
+      };
+      const renderFallbackSelection = () => {
+        if (window.__bmAppReady) return;
+        const leagues = window.LEAGUES || [];
+        if (leagueCards) {
+          leagueCards.innerHTML = leagues.length
+            ? leagues.map((league) => `
+              <button class="league-card" data-fallback-league="${league.id}">
+                <strong>${league.name}</strong>
+                <span>${league.country}</span>
+              </button>
+            `).join('')
+            : '<div class="muted">Sem ligas carregadas.</div>';
+        }
+        if (teamPicker) {
+          const selectedLeague = leagues[0];
+          if (!selectedLeague) return;
+          const palette = window.TEAM_COLOR_PALETTE || [['#1f2a44', '#f2a900']];
+          teamPicker.innerHTML = selectedLeague.teams.map((team, index) => `
+            <div class="team-card" data-fallback-team="${team.city} ${team.nickname}">
+              <div class="logo-row">
+                <div class="logo-fallback" style="background: linear-gradient(140deg, ${palette[index % palette.length][0]}, ${palette[index % palette.length][1]});">
+                  <span>${(team.city[0] || '') + (team.nickname[0] || '')}</span>
+                </div>
+                <div>
+                  <strong>${team.city} ${team.nickname}</strong>
+                  <div class="city">${team.city}</div>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        }
+        if (teamPreview) {
+          teamPreview.innerHTML = '<div class="muted">Selecione um time para ver a prévia.</div>';
+        }
+      };
+      document.addEventListener('click', (event) => {
+        if (window.__bmAppReady) return;
+        const btn = event.target.closest('button');
+        if (!btn) return;
+        if (btn.id === 'btn-start-load' || btn.id === 'btn-start-new' || btn.id === 'btn-start-franchise') {
+          event.preventDefault();
+          openTeams();
+          return;
+        }
+        if (btn.id === 'btn-login') {
+          event.preventDefault();
+          if (window.handleLogin) {
+            window.handleLogin();
+          } else {
+            openTeams();
+          }
+          return;
+        }
+        if (btn.id === 'btn-start') {
+          if (window.startNewGame) {
+            event.preventDefault();
+            window.startNewGame();
+          }
+        }
+      }, true);
+      window.addEventListener('error', (event) => {
+        if (!event || !event.message) return;
+        errorBanner.textContent = `Erro: ${event.message}`;
+        errorBanner.style.display = 'block';
+      });
+      if (window.__bmDataReady) {
+        renderFallbackSelection();
+      } else {
+        const wait = setInterval(() => {
+          if (window.__bmDataReady) {
+            clearInterval(wait);
+            renderFallbackSelection();
+          }
+        }, 200);
+      }
+    })();
+  </script>
+
+  <script src="js/storage.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/stats-utils.js"></script>
+  <script src="js/game-core.js"></script>
+  <script src="js/sim.js"></script>
+  <script src="js/live-utils.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/scouting.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/text.js"></script>
+  <script src="js/overlay.js"></script>
+  <script src="js/render-core.js"></script>
+  <script src="js/market-ui.js"></script>
+  <script src="js/season-sim.js"></script>
+  <script src="js/market-core.js"></script>
+  <script src="js/season-core.js"></script>
+  <script src="js/live.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/tests.js"></script>
+</body>
+</html>
