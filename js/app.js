@@ -52,6 +52,7 @@
   let lastTeamPickerLeague = null;
   let lastTeamPickerSpecs = null;
   let lastAutoSaveAt = 0;
+  let splashAudioPlayed = false;
   let isSimulating = false;
   let liveTimer = null;
   let liveLines = [];
@@ -130,6 +131,37 @@
     setTimeout(() => {
       if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
     }, 700);
+  };
+
+  const shouldPlaySplashAudio = () => {
+    if (gameState && gameState.settings) {
+      return !!(gameState.settings.musicOn || gameState.settings.sfxOn);
+    }
+    return true;
+  };
+
+  const playSplashAudio = () => {
+    if (splashAudioPlayed || !shouldPlaySplashAudio()) return;
+    splashAudioPlayed = true;
+    if (typeof ensureAudioContext === 'function') ensureAudioContext();
+    try {
+      const ctx = typeof getAudioContext === 'function' ? getAudioContext() : (window.audioCtx || null);
+      if (ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+        ctx.resume().catch(() => {});
+      }
+    } catch (err) {
+      // ignore
+    }
+    if (typeof playShortBuzzerSfx === 'function') playShortBuzzerSfx();
+    if (typeof playBounceSfx === 'function') setTimeout(() => playBounceSfx(), 120);
+    if (typeof playSwishSfx === 'function') setTimeout(() => playSwishSfx(), 240);
+  };
+
+  const bindSplashAudio = () => {
+    const splash = document.getElementById('splash');
+    if (!splash) return;
+    splash.addEventListener('pointerdown', playSplashAudio, { once: true });
+    document.addEventListener('keydown', playSplashAudio, { once: true });
   };
 
   const PROFILE_LIST_KEY = 'gm-pro-basketball-profiles';
@@ -946,6 +978,58 @@
     root.style.setProperty('--team-primary-soft', `${primary}99`);
   };
 
+  const SPLASH_THEME_KEY = 'bm-last-theme';
+
+  const normalizeThemeColors = (colors = {}) => {
+    if (Array.isArray(colors)) {
+      return {
+        primary: colors[0] || '#1f2a44',
+        secondary: colors[1] || '#f2a900'
+      };
+    }
+    return {
+      primary: colors.primary || colors[0] || '#1f2a44',
+      secondary: colors.secondary || colors[1] || '#f2a900'
+    };
+  };
+
+  const saveSplashTheme = (colors, teamLabel = '') => {
+    if (typeof localStorage === 'undefined') return;
+    const palette = normalizeThemeColors(colors);
+    const payload = {
+      primary: palette.primary,
+      secondary: palette.secondary,
+      team: teamLabel || '',
+      updatedAt: Date.now()
+    };
+    try {
+      localStorage.setItem(SPLASH_THEME_KEY, JSON.stringify(payload));
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const loadSplashTheme = () => {
+    if (typeof localStorage === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem(SPLASH_THEME_KEY);
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      if (!data || !data.primary || !data.secondary) return null;
+      return data;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  const applyStoredSplashTheme = () => {
+    const stored = loadSplashTheme();
+    if (!stored) return;
+    safeApplyTeamTheme({ primary: stored.primary, secondary: stored.secondary });
+  };
+
+  applyStoredSplashTheme();
+
   const scanSaveKeys = () => {
     const results = [];
     if (typeof localStorage === 'undefined') return results;
@@ -1003,7 +1087,11 @@
     if (!loaded) return false;
     gameState = loaded;
     normalizeLoadedState();
-    applyThemeFromTeam(getTeamById(gameState.userTeamId));
+    const loadedTeam = getTeamById(gameState.userTeamId);
+    applyThemeFromTeam(loadedTeam);
+    if (loadedTeam) {
+      saveSplashTheme(loadedTeam.colors, `${loadedTeam.city} ${loadedTeam.nickname}`);
+    }
     refreshAudioUI();
     applyAudioPlayback();
     safeCloseOverlay(ui.startScreen);
@@ -2988,7 +3076,13 @@
   const renderActiveView = (viewId = activeViewId) => {
     if (!gameState) return;
     syncActiveHuman();
-    applyThemeFromTeam(getTeamById(gameState.userTeamId));
+    {
+      const currentTeam = getTeamById(gameState.userTeamId);
+      applyThemeFromTeam(currentTeam);
+      if (currentTeam) {
+        saveSplashTheme(currentTeam.colors, `${currentTeam.city} ${currentTeam.nickname}`);
+      }
+    }
     setProfileInfo();
     const map = {
       dashboard: [
@@ -3921,6 +4015,7 @@
       </div>
     `;
     safeApplyTeamTheme({ primary: colors[0], secondary: colors[1] });
+    saveSplashTheme({ primary: colors[0], secondary: colors[1] }, `${team.city} ${team.nickname}`);
   };
 
   const updateFilterClearState = () => {
@@ -4349,7 +4444,13 @@
         updateFanToleranceUI();
         applyCompactMode();
         applyPerformanceMode();
-        applyThemeFromTeam(getTeamById(gameState.userTeamId));
+        {
+          const currentTeam = getTeamById(gameState.userTeamId);
+          applyThemeFromTeam(currentTeam);
+          if (currentTeam) {
+            saveSplashTheme(currentTeam.colors, `${currentTeam.city} ${currentTeam.nickname}`);
+          }
+        }
         refreshAudioUI();
         applyAudioPlayback();
         lastAutoSaveAt = Date.now();
@@ -4396,7 +4497,13 @@
     closeOverlay(ui.overlay);
     applyCompactMode();
     applyPerformanceMode();
-    applyThemeFromTeam(getTeamById(gameState.userTeamId));
+    {
+      const currentTeam = getTeamById(gameState.userTeamId);
+      applyThemeFromTeam(currentTeam);
+      if (currentTeam) {
+        saveSplashTheme(currentTeam.colors, `${currentTeam.city} ${currentTeam.nickname}`);
+      }
+    }
     refreshAudioUI();
     applyAudioPlayback();
     lastAutoSaveAt = Date.now();
@@ -4510,6 +4617,7 @@
 
   const boot = () => {
     ensureDefaultProfile();
+    bindSplashAudio();
     buildLeaguePicker();
     buildMusicTrackOptions();
     buildProfileList();

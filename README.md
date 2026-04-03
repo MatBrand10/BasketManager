@@ -20,6 +20,8 @@ No modo desktop, o salvamento fica em arquivo local (`saves.json`) dentro da pas
 
 - `npm run pack` (gera `dist/win-unpacked`)
 - `npm run dist:win` (instalador + portable)
+- `npm run dist:win:beta` (exe/instalador com nome Beta)
+- `npm run dist:win:dev` (exe/instalador com nome Dev)
 - `npm run dist:linux`
 - `npm run dist:mac`
 
@@ -27,6 +29,11 @@ O icon utilizado no build vem de `assets/icon.png` e `assets/icon.ico` (Windows)
 Para gerar o icon do macOS:
 - `python -m pip install pillow`
 - `npm run icon:icns`
+
+## Splash
+
+- O splash toca um FX curto na primeira interacao do usuario.
+- As cores do splash seguem o ultimo time selecionado.
 
 ## Controles principais
 
