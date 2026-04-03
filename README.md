@@ -23,7 +23,7 @@ No modo desktop, o salvamento fica em arquivo local (`saves.json`) dentro da pas
 - `npm run dist:linux`
 - `npm run dist:mac`
 
-O icon utilizado no build vem de `assets/icon.png`.
+O icon utilizado no build vem de `assets/icon.png` e `assets/icon.ico` (Windows).
 
 ## Controles principais
 
