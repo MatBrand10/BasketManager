@@ -170,8 +170,8 @@ const TEAM_COLOR_PALETTE = [
 const LEAGUES = [
   {
     id: 'nba',
-    name: 'NBA',
-    country: 'EUA',
+    name: 'Liga USA',
+    country: 'Estados Unidos',
     gamesPerTeam: 82,
     conferences: ['Leste', 'Oeste'],
     playoffTeams: 16,
@@ -184,34 +184,34 @@ const LEAGUES = [
       { city: 'Boston', nickname: 'Harbors' },
       { city: 'Dallas', nickname: 'Outlaws' },
       { city: 'Houston', nickname: 'Comets' },
-      { city: 'Phoenix', nickname: 'Suns' },
+      { city: 'Phoenix', nickname: 'Solars' },
       { city: 'Denver', nickname: 'Peaks' },
-      { city: 'Seattle', nickname: 'Storm' },
+      { city: 'Seattle', nickname: 'Squalls' },
       { city: 'Atlanta', nickname: 'Aviators' },
       { city: 'Detroit', nickname: 'Motors' },
-      { city: 'Orlando', nickname: 'Wizards' },
-      { city: 'Minneapolis', nickname: 'Lakes' },
+      { city: 'Orlando', nickname: 'Arcanes' },
+      { city: 'Minneapolis', nickname: 'Glaciers' },
       { city: 'San Francisco', nickname: 'Bridges' },
       { city: 'San Diego', nickname: 'Tritons' },
       { city: 'Las Vegas', nickname: 'Royals' },
-      { city: 'New Orleans', nickname: 'Jazz' },
+      { city: 'New Orleans', nickname: 'Brass' },
       { city: 'Philadelphia', nickname: 'Founders' },
-      { city: 'Washington', nickname: 'Capitals' },
+      { city: 'Washington', nickname: 'Monuments' },
       { city: 'Charlotte', nickname: 'Rebels' },
       { city: 'Cleveland', nickname: 'Lancers' },
-      { city: 'Milwaukee', nickname: 'Bucks' },
+      { city: 'Milwaukee', nickname: 'Timber' },
       { city: 'Portland', nickname: 'Pines' },
       { city: 'Sacramento', nickname: 'Gold' },
       { city: 'Salt Lake', nickname: 'Summit' },
       { city: 'Memphis', nickname: 'Rhythm' },
-      { city: 'Oklahoma City', nickname: 'Thunder' },
+      { city: 'Oklahoma City', nickname: 'Bolts' },
       { city: 'Toronto', nickname: 'North' },
-      { city: 'Vancouver', nickname: 'Harbors' }
+      { city: 'Vancouver', nickname: 'Cascades' }
     ]
   },
   {
     id: 'nbb',
-    name: 'NBB',
+    name: 'Liga Brasil',
     country: 'Brasil',
     gamesPerTeam: 34,
     conferences: ['Unica'],
@@ -227,7 +227,7 @@ const LEAGUES = [
       { city: 'Salvador', nickname: 'Atunes' },
       { city: 'Curitiba', nickname: 'Pinhais' },
       { city: 'Porto Alegre', nickname: 'Guaranis' },
-      { city: 'Campinas', nickname: 'Rockets' },
+      { city: 'Campinas', nickname: 'Meteors' },
       { city: 'Florianopolis', nickname: 'Raios' },
       { city: 'Goiania', nickname: 'Cerrado' },
       { city: 'Manaus', nickname: 'Oncas' },
@@ -238,14 +238,14 @@ const LEAGUES = [
   },
   {
     id: 'euroleague',
-    name: 'EuroLeague',
+    name: 'Liga Europa',
     country: 'Europa',
     gamesPerTeam: 34,
     conferences: ['Unica'],
     playoffTeams: 8,
     draftLottery: false,
     teams: [
-      { city: 'Madrid', nickname: 'Royals' },
+      { city: 'Madrid', nickname: 'Crowns' },
       { city: 'Barcelona', nickname: 'Rays' },
       { city: 'Istanbul', nickname: 'Sultans' },
       { city: 'Athens', nickname: 'Legends' },
@@ -257,17 +257,17 @@ const LEAGUES = [
       { city: 'Tel Aviv', nickname: 'Stars' },
       { city: 'Kaunas', nickname: 'Eagles' },
       { city: 'Lisbon', nickname: 'Sailors' },
-      { city: 'Prague', nickname: 'Crowns' },
+      { city: 'Prague', nickname: 'Golems' },
       { city: 'Vienna', nickname: 'Riders' },
       { city: 'Warsaw', nickname: 'Foxes' },
       { city: 'Zagreb', nickname: 'Dragons' },
-      { city: 'Budapest', nickname: 'Bulls' },
-      { city: 'Stockholm', nickname: 'Northern' }
+      { city: 'Budapest', nickname: 'Bisons' },
+      { city: 'Stockholm', nickname: 'Aurora' }
     ]
   },
   {
     id: 'acb',
-    name: 'Liga ACB',
+    name: 'Liga Espanha',
     country: 'Espanha',
     gamesPerTeam: 34,
     conferences: ['Unica'],
@@ -296,14 +296,14 @@ const LEAGUES = [
   },
   {
     id: 'lnb',
-    name: 'LNB Pro A',
+    name: 'Liga Franca',
     country: 'Franca',
     gamesPerTeam: 34,
     conferences: ['Unica'],
     playoffTeams: 8,
     draftLottery: false,
     teams: [
-      { city: 'Paris', nickname: 'Royals' },
+      { city: 'Paris', nickname: 'Lumens' },
       { city: 'Lyon', nickname: 'Lynx' },
       { city: 'Marseille', nickname: 'Harbor' },
       { city: 'Lille', nickname: 'Frost' },
@@ -320,7 +320,7 @@ const LEAGUES = [
       { city: 'Grenoble', nickname: 'Alps' },
       { city: 'Limoges', nickname: 'Copper' },
       { city: 'Orleans', nickname: 'Knights' },
-      { city: 'Tours', nickname: 'Tours' }
+      { city: 'Tours', nickname: 'Spirits' }
     ]
   }
 ];

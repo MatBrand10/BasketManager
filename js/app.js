@@ -1074,8 +1074,8 @@
   const FALLBACK_LEAGUES = [
     {
       id: 'nba',
-      name: 'NBA',
-      country: 'EUA',
+      name: 'Liga USA',
+      country: 'Estados Unidos',
       gamesPerTeam: 82,
       conferences: ['Leste', 'Oeste'],
       playoffTeams: 16,
@@ -1090,7 +1090,7 @@
     },
     {
       id: 'nbb',
-      name: 'NBB',
+      name: 'Liga Brasil',
       country: 'Brasil',
       gamesPerTeam: 34,
       conferences: ['Unica'],

@@ -1,0 +1,12 @@
+"appbuild"
+{
+  "appid" "YOUR_APP_ID"
+  "desc" "Basket Manager build"
+  "buildoutput" "steam/build"
+  "contentroot" ".."
+  "setlive" "public"
+  "depots"
+  {
+    "YOUR_DEPOT_ID" "steam/depot_build.vdf"
+  }
+}

@@ -36,13 +36,20 @@ No modo desktop, o salvamento fica em arquivo local (`saves.json`) dentro da pas
 - Instalacoes com upgrades que afetam evolucao e recuperacao.
 - Calendario de selecoes (Olimpiadas e Copa do Mundo).
 - Limite de carreira em 15 temporadas.
-- Multiplas ligas jogaveis (NBA, NBB, EuroLeague, ACB, LNB).
+- Multiplas ligas jogaveis (Liga USA, Liga Brasil, Liga Europa, Liga Espanha, Liga Franca).
 - Identidade visual por time (cidade, cores e tecnico).
 - Suporte a idioma PT/EN/ES via Menu GM.
 - IA de front office (trocas, contratacoes e troca de tecnico).
 - Transferencias internacionais entre ligas na offseason.
 - Premiacoes de temporada e rivalidades.
 - Sistema de torcida e arena influenciando receitas.
+
+## Steam (templates)
+
+1. Gere o build desktop:
+   - `npm install`
+   - `npm run pack`
+2. Os arquivos de template ficam em `steam/` para subir no Steamworks (substitua os IDs).
 
 ## Observacoes
 
