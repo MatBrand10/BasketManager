@@ -16,6 +16,15 @@ Jogo manager inspirado no Brasfoot, focado em basquete profissional. Funciona of
 
 No modo desktop, o salvamento fica em arquivo local (`saves.json`) dentro da pasta de dados do app.
 
+### Builds (pack/dist)
+
+- `npm run pack` (gera `dist/win-unpacked`)
+- `npm run dist:win` (instalador + portable)
+- `npm run dist:linux`
+- `npm run dist:mac`
+
+O icon utilizado no build vem de `assets/icon.png`.
+
 ## Controles principais
 
 - `Novo Jogo`: reinicia a carreira.
