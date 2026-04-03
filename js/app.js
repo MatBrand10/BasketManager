@@ -123,6 +123,15 @@
     }
   };
 
+  const hideSplashScreen = () => {
+    const splash = document.getElementById('splash');
+    if (!splash || splash.classList.contains('hidden')) return;
+    splash.classList.add('hidden');
+    setTimeout(() => {
+      if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+    }, 700);
+  };
+
   const PROFILE_LIST_KEY = 'gm-pro-basketball-profiles';
   const LOGIN_QUICK_KEY = 'basket-manager-login-quick';
   const QUICK_SAVE_ID = '__quick__';
@@ -4523,6 +4532,7 @@
     }
     registerServiceWorker();
     maybeHydrateTeamSelection();
+    hideSplashScreen();
   };
 
   // ------------------------------
@@ -5222,6 +5232,9 @@
   });
 
   setInterval(ensureOverlayState, 1000);
+
+  window.addEventListener('load', hideSplashScreen);
+  window.hideSplashScreen = hideSplashScreen;
 
   boot();
 

@@ -24,6 +24,9 @@ No modo desktop, o salvamento fica em arquivo local (`saves.json`) dentro da pas
 - `npm run dist:mac`
 
 O icon utilizado no build vem de `assets/icon.png` e `assets/icon.ico` (Windows).
+Para gerar o icon do macOS:
+- `python -m pip install pillow`
+- `npm run icon:icns`
 
 ## Controles principais
 

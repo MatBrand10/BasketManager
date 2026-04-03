@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "basket-manager",
   "version": "0.2.0",
   "description": "Basket Manager - desktop build",
@@ -6,24 +6,30 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
-    "pack": "electron-builder --dir",
-    "pack:win": "electron-builder --dir --win --x64",
-    "pack:linux": "electron-builder --dir --linux",
-    "pack:mac": "electron-builder --dir --mac",
-    "dist": "electron-builder",
-    "dist:win": "electron-builder --win --x64",
-    "dist:linux": "electron-builder --linux",
-    "dist:mac": "electron-builder --mac",
-    "dist:all": "electron-builder -mwl",
+    "pack": "cross-env CHANNEL=local electron-builder --dir",
+    "pack:win": "cross-env CHANNEL=local electron-builder --dir --win --x64",
+    "pack:linux": "cross-env CHANNEL=local electron-builder --dir --linux",
+    "pack:mac": "cross-env CHANNEL=local electron-builder --dir --mac",
+    "dist": "cross-env CHANNEL=stable electron-builder",
+    "dist:win": "cross-env CHANNEL=stable electron-builder --win --x64",
+    "dist:win:beta": "cross-env CHANNEL=beta electron-builder --win --x64",
+    "dist:win:dev": "cross-env CHANNEL=dev electron-builder --win --x64",
+    "dist:linux": "cross-env CHANNEL=stable electron-builder --linux",
+    "dist:mac": "cross-env CHANNEL=stable electron-builder --mac",
+    "dist:all": "cross-env CHANNEL=stable electron-builder -mwl",
+    "icon:icns": "python scripts/generate-icns.py",
     "build": "electron-builder"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "electron": "^30.0.0",
     "electron-builder": "^24.13.3"
   },
   "build": {
     "appId": "com.basketmanager.app",
     "productName": "Basket Manager",
+    "executableName": "BasketManager",
+    "artifactName": "${productName}-${version}-${env.CHANNEL}.${ext}",
     "icon": "assets/icon.png",
     "directories": {
       "buildResources": "assets",
@@ -37,6 +43,7 @@
     ],
     "win": {
       "icon": "assets/icon.ico",
+      "artifactName": "BasketManager-Setup-${version}.${ext}",
       "target": [
         {
           "target": "nsis",
@@ -56,15 +63,16 @@
             "x64"
           ]
         }
-      ],
-      "artifactName": "BasketManager-Setup-${version}.${ext}"
+      ]
     },
     "mac": {
-      "icon": "assets/icon.png",
+      "icon": "assets/icon.icns",
+      "artifactName": "${productName}-${version}-${env.CHANNEL}-mac.${ext}",
       "target": "dmg"
     },
     "linux": {
       "icon": "assets/icon.png",
+      "artifactName": "${productName}-${version}-${env.CHANNEL}-linux.${ext}",
       "target": "AppImage"
     }
   }
