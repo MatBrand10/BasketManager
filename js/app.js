@@ -152,6 +152,10 @@
     } catch (err) {
       // ignore
     }
+    if (typeof playSplashJingle === 'function') {
+      playSplashJingle();
+      return;
+    }
     if (typeof playShortBuzzerSfx === 'function') playShortBuzzerSfx();
     if (typeof playBounceSfx === 'function') setTimeout(() => playBounceSfx(), 120);
     if (typeof playSwishSfx === 'function') setTimeout(() => playSwishSfx(), 240);
@@ -1029,6 +1033,36 @@
   };
 
   applyStoredSplashTheme();
+
+  const previewThemeFromState = (state) => {
+    if (!state || !state.teams || !state.teams.length) return;
+    const team = state.teams.find((t) => t.id === state.userTeamId) || null;
+    if (!team) return;
+    if (typeof applyTeamTheme === 'function') {
+      applyTeamTheme(team.colors, team);
+    } else {
+      safeApplyTeamTheme(team.colors || {});
+    }
+    saveSplashTheme(team.colors, `${team.city} ${team.nickname}`);
+  };
+
+  const previewThemeFromSaveValue = (value) => {
+    if (!value) return;
+    if (value === QUICK_SAVE_ID) {
+      previewThemeFromState(loadQuickSave());
+      return;
+    }
+    let profileId = activeProfileId || null;
+    let saveId = value;
+    if (value.includes('::')) {
+      const parts = value.split('::');
+      profileId = parts[0] || profileId;
+      saveId = parts[1] || saveId;
+    }
+    if (!profileId || !saveId) return;
+    const state = StorageAPI.loadState(profileId, saveId);
+    previewThemeFromState(state);
+  };
 
   const scanSaveKeys = () => {
     const results = [];
@@ -5059,6 +5093,7 @@
     ui.saveSlot.addEventListener('change', () => {
       const value = ui.saveSlot.value;
       if (!value) return;
+      previewThemeFromSaveValue(value);
       if (value === QUICK_SAVE_ID) {
         activeSaveId = QUICK_SAVE_ID;
         return;
@@ -5076,6 +5111,14 @@
         return;
       }
       activeSaveId = value || activeSaveId;
+    });
+  }
+
+  if (ui.loginSaveSlot) {
+    ui.loginSaveSlot.addEventListener('change', () => {
+      const value = ui.loginSaveSlot.value;
+      if (!value) return;
+      previewThemeFromSaveValue(value);
     });
   }
 

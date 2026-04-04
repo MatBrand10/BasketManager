@@ -506,6 +506,31 @@ const playBuzzerSfx = () => {
   osc.stop(now + 0.75);
 };
 
+const playSplashJingle = () => {
+  ensureAudioContext();
+  if (!audioCtx || !sfxGain) return;
+  const now = audioCtx.currentTime;
+  const tones = [
+    { freq: 523.25, time: 0.0, dur: 0.16 },
+    { freq: 659.25, time: 0.18, dur: 0.16 },
+    { freq: 783.99, time: 0.36, dur: 0.18 },
+    { freq: 659.25, time: 0.56, dur: 0.2 }
+  ];
+  tones.forEach((tone) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = tone.freq;
+    osc.connect(gain);
+    gain.connect(sfxGain);
+    gain.gain.setValueAtTime(0, now + tone.time);
+    gain.gain.linearRampToValueAtTime(0.18, now + tone.time + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + tone.time + tone.dur);
+    osc.start(now + tone.time);
+    osc.stop(now + tone.time + tone.dur);
+  });
+};
+
 const shouldPlayAudio = (type) => {
   const state = getAudioState();
   if (!state || !state.settings) return false;
@@ -619,7 +644,8 @@ window.AppAudio = {
   playThudSfx,
   playShortBuzzerSfx,
   playDunkSfx,
-  playBuzzerSfx
+  playBuzzerSfx,
+  playSplashJingle
 };
 
 window.ensureAudioContext = ensureAudioContext;
@@ -648,4 +674,5 @@ window.playThudSfx = playThudSfx;
 window.playShortBuzzerSfx = playShortBuzzerSfx;
 window.playDunkSfx = playDunkSfx;
 window.playBuzzerSfx = playBuzzerSfx;
+window.playSplashJingle = playSplashJingle;
 })();

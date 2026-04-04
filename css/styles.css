@@ -93,6 +93,15 @@ body::before {
   font-size: 14px;
 }
 
+.splash-hint {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  opacity: 0.85;
+  animation: splashPulse 1.8s ease-in-out infinite;
+}
+
 .splash-loader {
   height: 4px;
   border-radius: 999px;
@@ -114,6 +123,11 @@ body::before {
   0% { transform: translateX(-100%); }
   60% { transform: translateX(0%); }
   100% { transform: translateX(100%); }
+}
+
+@keyframes splashPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
 }
 
 :focus-visible {
