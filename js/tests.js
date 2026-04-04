@@ -38,6 +38,17 @@
     const worldPlayoffs = document.getElementById('world-playoffs');
     push('world-playoffs', !!worldPlayoffs, worldPlayoffs ? 'ok' : 'ausente');
 
+    const i18nMissing = [];
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      const key = el.getAttribute('data-i18n');
+      if (!key) return;
+      const text = typeof window.t === 'function' ? window.t(key) : key;
+      if (!text || text === key) i18nMissing.push(key);
+    });
+    push('i18n-keys', i18nMissing.length === 0, i18nMissing.length ? `faltando=${i18nMissing.length}` : 'ok');
+
+    push('debug-log', typeof window.getDebugLog === 'function', typeof window.getDebugLog === 'function' ? 'ok' : 'ausente');
+
     const state = typeof window.getGameState === 'function' ? window.getGameState() : null;
     if (state) {
       push('state-league', !!(state.league && state.league.id), state.league ? state.league.id : 'ausente');

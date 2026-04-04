@@ -68,6 +68,10 @@
   let forceNewGame = false;
   let customFranchise = null;
   let selectedTacticsPlayerId = null;
+  let rosterRenderLimit = null;
+  const ROSTER_PAGE_SIZE = 24;
+  const DEBUG_LOG_KEY = 'basket-manager-debug-log';
+  const DEBUG_LOG_LIMIT = 80;
 
   const {
     rand,
@@ -333,6 +337,7 @@
     gameState.settings.musicOn = true;
     gameState.settings.musicTrack = index;
     refreshAudioUI();
+    refreshDebugUI();
     if (typeof startMusicTrack === 'function') startMusicTrack(index);
     renderMusicPlaylist();
     previewTimer = setTimeout(() => clearPreview(true), 12000);
@@ -1038,6 +1043,81 @@
 
   applyStoredSplashTheme();
 
+  const loadDebugLog = () => {
+    if (typeof localStorage === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem(DEBUG_LOG_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      return [];
+    }
+  };
+
+  const saveDebugLog = (items) => {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(DEBUG_LOG_KEY, JSON.stringify(items));
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const updateDebugStatus = () => {
+    if (!ui.debugLogStatus) return;
+    const items = loadDebugLog();
+    if (!items.length) {
+      ui.debugLogStatus.textContent = t ? t('msg_debug_empty') : 'Sem logs.';
+      return;
+    }
+    const latest = items[0];
+    const time = latest && latest.time ? new Date(latest.time).toLocaleString('pt-BR') : '-';
+    ui.debugLogStatus.textContent = `${items.length} ${t ? t('label_logs') : 'logs'} • ${t ? t('label_last') : 'Ultimo'}: ${time}`;
+  };
+
+  const pushDebugLog = (entry) => {
+    const items = loadDebugLog();
+    items.unshift({
+      time: Date.now(),
+      ...entry
+    });
+    saveDebugLog(items.slice(0, DEBUG_LOG_LIMIT));
+    updateDebugStatus();
+    if (gameState && gameState.settings && gameState.settings.debugMode && entry && entry.message) {
+      console.warn(entry.message);
+    }
+  };
+
+  const downloadJSON = (data, filename) => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportDebugLog = () => {
+    const items = loadDebugLog();
+    if (!items.length) {
+      alert(t ? t('msg_debug_empty') : 'Sem logs.');
+      return;
+    }
+    downloadJSON(items, `debug_log_${new Date().toISOString().slice(0, 10)}.json`);
+  };
+
+  const clearDebugLog = () => {
+    saveDebugLog([]);
+    updateDebugStatus();
+  };
+
+  window.getDebugLog = () => loadDebugLog();
+  window.clearDebugLog = () => clearDebugLog();
+
   const previewThemeFromState = (state) => {
     if (!state || !state.teams || !state.teams.length) return;
     const team = state.teams.find((t) => t.id === state.userTeamId) || null;
@@ -1312,6 +1392,12 @@
     } else if (typeof stopAmbientCrowd === 'function') {
       stopAmbientCrowd();
     }
+  };
+
+  const refreshDebugUI = () => {
+    if (!gameState || !gameState.settings) return;
+    if (ui.debugMode) ui.debugMode.checked = !!gameState.settings.debugMode;
+    updateDebugStatus();
   };
 
   const maybePlaySfxForLine = (line) => {
@@ -2138,7 +2224,8 @@
         musicTrack: 0,
         performanceMode: false,
         ambientOn: false,
-        ambientVolume: 0.2
+        ambientVolume: 0.2,
+        debugMode: false
       },
       market: {
         freeAgents: createFreeAgents(25, currentLeague.id),
@@ -2378,7 +2465,8 @@
         musicTrack: 0,
         performanceMode: false,
         ambientOn: false,
-        ambientVolume: 0.2
+        ambientVolume: 0.2,
+        debugMode: false
       };
     }
     if (typeof gameState.settings.fanTolerance !== 'number') {
@@ -2413,6 +2501,9 @@
     }
     if (typeof gameState.settings.ambientVolume !== 'number') {
       gameState.settings.ambientVolume = 0.2;
+    }
+    if (typeof gameState.settings.debugMode !== 'boolean') {
+      gameState.settings.debugMode = false;
     }
     if (!gameState.saveId) {
       gameState.saveId = activeSaveId || StorageAPI.createId();
@@ -3018,6 +3109,11 @@
     getPositionFitMultiplier,
     computeMonthlyIncome,
     logMessage,
+    isCompactMode: () => document.body.classList.contains('compact'),
+    isPerformanceMode: () => (gameState && gameState.settings && gameState.settings.performanceMode),
+    getRosterRenderLimit: () => rosterRenderLimit,
+    setRosterRenderLimit: (value) => { rosterRenderLimit = value; },
+    getRosterPageSize: () => ROSTER_PAGE_SIZE,
     getInternationalCycle: (season) => {
       if (season % 4 === 0) return 'Olimpiadas';
       if (season % 4 === 2) return 'Copa do Mundo';
@@ -3278,6 +3374,17 @@
   const handleRosterAction = (event) => {
     const target = event.target;
     if (!target.dataset.action) return;
+
+    if (target.dataset.action === 'roster-show-more') {
+      rosterRenderLimit = (rosterRenderLimit || ROSTER_PAGE_SIZE) + ROSTER_PAGE_SIZE;
+      renderAll();
+      return;
+    }
+    if (target.dataset.action === 'roster-show-all') {
+      rosterRenderLimit = 9999;
+      renderAll();
+      return;
+    }
 
     const team = getTeamById(gameState.userTeamId);
     const player = team.roster.find((p) => p.id === target.dataset.id);
@@ -4491,6 +4598,7 @@
           }
         }
         refreshAudioUI();
+        refreshDebugUI();
         applyAudioPlayback();
         lastAutoSaveAt = Date.now();
         renderAll();
@@ -4544,6 +4652,7 @@
       }
     }
     refreshAudioUI();
+    refreshDebugUI();
     applyAudioPlayback();
     lastAutoSaveAt = Date.now();
     renderAll();
@@ -4667,6 +4776,7 @@
     updateFilterClearState();
     applyCompactMode();
     ensureOverlayState();
+    updateDebugStatus();
     const activeTab = [...ui.tabs].find((tab) => tab.classList.contains('active'));
     if (activeTab && activeTab.dataset.view) {
       activeViewId = activeTab.dataset.view;
@@ -4694,6 +4804,7 @@
     ui.rosterSort.addEventListener('change', () => {
       if (!gameState || !gameState.settings) return;
       gameState.settings.rosterSort = ui.rosterSort.value;
+      rosterRenderLimit = null;
       renderRoster();
     });
   }
@@ -4702,6 +4813,7 @@
     ui.rosterFilter.addEventListener('change', () => {
       if (!gameState || !gameState.settings) return;
       gameState.settings.rosterFilter = ui.rosterFilter.value;
+      rosterRenderLimit = null;
       renderRoster();
     });
   }
@@ -4809,6 +4921,7 @@
   ui.btnMenu.addEventListener('click', () => {
     openOverlay(ui.menuOverlay);
     renderMusicPlaylist();
+    updateDebugStatus();
   });
 
   ui.menuOverlay.addEventListener('click', (event) => {
@@ -5083,6 +5196,22 @@
 
   if (ui.btnRunTests) {
     ui.btnRunTests.addEventListener('click', handleRunTests);
+  }
+
+  if (ui.debugMode) {
+    ui.debugMode.addEventListener('change', () => {
+      if (!gameState || !gameState.settings) return;
+      gameState.settings.debugMode = ui.debugMode.checked;
+      refreshDebugUI();
+    });
+  }
+
+  if (ui.btnExportLogs) {
+    ui.btnExportLogs.addEventListener('click', exportDebugLog);
+  }
+
+  if (ui.btnClearLogs) {
+    ui.btnClearLogs.addEventListener('click', clearDebugLog);
   }
 
   if (ui.saveImportFile) {
@@ -5384,6 +5513,27 @@
   window.addEventListener('beforeunload', autoSaveOnHide);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') autoSaveOnHide();
+  });
+
+  window.addEventListener('error', (event) => {
+    if (!event) return;
+    pushDebugLog({
+      type: 'error',
+      message: event.message || 'Erro desconhecido',
+      source: event.filename || '',
+      line: event.lineno || 0,
+      col: event.colno || 0,
+      stack: event.error && event.error.stack ? event.error.stack : ''
+    });
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event && event.reason ? event.reason : null;
+    pushDebugLog({
+      type: 'promise',
+      message: reason && reason.message ? reason.message : String(reason || 'Rejeicao desconhecida'),
+      stack: reason && reason.stack ? reason.stack : ''
+    });
   });
 
   setInterval(ensureOverlayState, 1000);

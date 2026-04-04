@@ -120,6 +120,15 @@ body::before {
   animation: splashLoading 1.2s ease infinite;
 }
 
+.roster-limit {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--card-alt);
+  display: grid;
+  gap: 8px;
+}
+
 @keyframes splashLoading {
   0% { transform: translateX(-100%); }
   60% { transform: translateX(0%); }

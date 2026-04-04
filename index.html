@@ -525,6 +525,21 @@
           <div class="muted" data-i18n="label_tests_hint">Executa checagens rápidas do sistema.</div>
         </div>
         <div class="card">
+          <h3 data-i18n="h_debug">Debug</h3>
+          <label class="field">
+            <span data-i18n="label_debug_mode">Modo debug</span>
+            <div class="row">
+              <input id="debug-mode" type="checkbox" />
+              <span class="muted" data-i18n="label_debug_mode_help">Registra erros em log local.</span>
+            </div>
+          </label>
+          <div class="row">
+            <button id="btn-export-logs" class="btn" data-i18n="btn_export_logs">Exportar log</button>
+            <button id="btn-clear-logs" class="btn danger" data-i18n="btn_clear_logs">Limpar log</button>
+          </div>
+          <div id="debug-log-status" class="muted"></div>
+        </div>
+        <div class="card">
           <h3 data-i18n="h_hotseat">Hotseat</h3>
           <label class="field">
             <span data-i18n="label_hotseat_name">Nome do GM</span>

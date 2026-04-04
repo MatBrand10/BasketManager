@@ -315,7 +315,25 @@
       morale: (a, b) => (b.morale || 70) - (a.morale || 70)
     };
     const rows = filtered
-      .sort((a, b) => (sorters[sortMode] ? sorters[sortMode](a, b) : b.ovr - a.ovr))
+      .sort((a, b) => (sorters[sortMode] ? sorters[sortMode](a, b) : b.ovr - a.ovr));
+
+    const compactMode = deps.isCompactMode ? deps.isCompactMode() : false;
+    const perfMode = deps.isPerformanceMode ? deps.isPerformanceMode() : false;
+    const pageSize = deps.getRosterPageSize ? deps.getRosterPageSize() : 24;
+    let limit = deps.getRosterRenderLimit ? deps.getRosterRenderLimit() : null;
+    if ((compactMode || perfMode) && rows.length > pageSize) {
+      if (!limit || limit < 1) {
+        limit = pageSize;
+        if (deps.setRosterRenderLimit) deps.setRosterRenderLimit(limit);
+      }
+    } else {
+      if (deps.setRosterRenderLimit) deps.setRosterRenderLimit(null);
+      limit = null;
+    }
+    const visibleRows = limit ? rows.slice(0, Math.min(limit, rows.length)) : rows;
+    const remaining = rows.length - visibleRows.length;
+
+    const rowHtml = visibleRows
       .map((player) => {
         const isStarter = team.rotation.starters.includes(player.id);
         const traitLabel = player.traits && player.traits.length
@@ -369,6 +387,16 @@
       })
       .join('');
 
+    const limitControls = remaining > 0 ? `
+      <div class="roster-limit">
+        <div class="muted">${t ? t('msg_roster_partial', { shown: visibleRows.length, total: rows.length }) : `Mostrando ${visibleRows.length} de ${rows.length}`}</div>
+        <div class="row">
+          <button class="btn" data-action="roster-show-more">${t ? t('btn_roster_show_more') : 'Mostrar mais'}</button>
+          <button class="btn" data-action="roster-show-all">${t ? t('btn_roster_show_all') : 'Mostrar tudo'}</button>
+        </div>
+      </div>
+    ` : '';
+
     ui.rosterTable.innerHTML = `
       <table class="table">
         <thead>
@@ -378,8 +406,9 @@
             <th>${t ? t('th_potential') : 'POT'}</th><th>${t ? t('th_profile') : 'Perfil'}</th><th>${t ? t('th_role') : 'Role'}</th><th>${t ? t('th_traits') : 'Traits'}</th><th>${t ? t('th_awards') : 'Premios'}</th><th>${t ? t('th_energy') : 'Energia'}</th><th>${t ? t('th_injury') : 'Lesao'}</th><th>${t ? t('th_salary') : 'Salario'}</th><th>${t ? t('th_contract') : 'Contrato'}</th><th>${t ? t('th_morale') : 'Moral'}</th><th>${t ? t('th_rotation') : 'Rotacao'}</th><th></th>
           </tr>
         </thead>
-        <tbody>${rows}</tbody>
+        <tbody>${rowHtml}</tbody>
       </table>
+      ${limitControls}
     `;
   };
 

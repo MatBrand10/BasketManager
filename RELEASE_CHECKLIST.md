@@ -21,3 +21,8 @@
 1. Verificar nomes ficticios e branding.
 2. Capturar screenshots para a página do jogo.
 3. Revisar textos (i18n) e feedbacks de erro.
+
+## QA avancado
+1. Menu GM â†’ Rodar testes (ver console).
+2. `window.runTests()` e `window.runSimulationSmokeTest()` no console.
+3. Verificar logs de debug em Menu GM â†’ Debug â†’ Exportar log.
