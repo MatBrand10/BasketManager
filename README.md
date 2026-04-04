@@ -75,3 +75,7 @@ Para gerar o icon do macOS:
 - Times e jogadores sao ficticios.
 - A temporada usa calendario simplificado (todos se enfrentam 2 vezes).
 - Playoffs e offseason sao simulados automaticamente ao fim da temporada.
+
+## Release
+
+Checklist rapido em `RELEASE_CHECKLIST.md`.

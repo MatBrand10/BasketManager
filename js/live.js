@@ -457,8 +457,13 @@
   };
 
   const renderLiveLines = (lines) => {
+    const deps = getDeps();
+    const perfMode = deps.isPerformanceMode ? deps.isPerformanceMode() : false;
+    const compactMode = deps.isCompactMode ? deps.isCompactMode() : false;
+    const limit = perfMode || compactMode ? 120 : 220;
+    const source = lines.length > limit ? lines.slice(-limit) : lines;
     const grouped = [];
-    lines.forEach((line) => {
+    source.forEach((line) => {
       const text = getLineText ? getLineText(line) : String(line);
       const last = grouped[grouped.length - 1];
       if (last && last.text === text) {

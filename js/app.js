@@ -3055,6 +3055,7 @@
     setIsSimulating: (value) => { isSimulating = value; },
     isSimulating: () => isSimulating,
     isPerformanceMode: () => (gameState && gameState.settings && gameState.settings.performanceMode),
+    isCompactMode: () => document.body.classList.contains('compact'),
     getLiveInterval: () => LIVE_LINE_INTERVAL
   };
 
