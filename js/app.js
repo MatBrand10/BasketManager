@@ -3131,7 +3131,9 @@
     startDraft,
     getDraftTeamForPick,
     buildTradeSuggestions,
-    computeMonthlyIncome
+    computeMonthlyIncome,
+    isCompactMode: () => document.body.classList.contains('compact'),
+    isPerformanceMode: () => (gameState && gameState.settings && gameState.settings.performanceMode)
   };
   window.AppSeasonDeps = {
     getState: () => gameState,
@@ -3421,6 +3423,23 @@
     if (!target.dataset.action) return;
 
     const team = getTeamById(gameState.userTeamId);
+
+    if (target.dataset.action === 'fa-show-more') {
+      if (!gameState.settings) gameState.settings = {};
+      if (!gameState.settings.freeAgentLimit) {
+        gameState.settings.freeAgentLimit = 18;
+      }
+      gameState.settings.freeAgentLimit += 18;
+      renderAll();
+      return;
+    }
+
+    if (target.dataset.action === 'fa-show-all') {
+      if (!gameState.settings) gameState.settings = {};
+      gameState.settings.freeAgentLimit = 9999;
+      renderAll();
+      return;
+    }
 
     if (target.dataset.action === 'sign') {
       const playerIndex = gameState.market.freeAgents.findIndex((p) => p.id === target.dataset.id);

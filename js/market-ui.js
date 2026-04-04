@@ -19,25 +19,52 @@
     const deps = getDeps();
     if (!gameState || !ui.freeAgents) return;
     const team = deps.getTeamById(gameState.userTeamId);
+    const compactMode = deps.isCompactMode ? deps.isCompactMode() : false;
+    const perfMode = deps.isPerformanceMode ? deps.isPerformanceMode() : false;
+    const settings = gameState.settings || {};
+    if (!gameState.settings) gameState.settings = settings;
+    let limit = typeof settings.freeAgentLimit === 'number' ? settings.freeAgentLimit : freeAgentRenderLimit;
+    if ((compactMode || perfMode) && gameState.market.freeAgents.length > BASE_FREE_AGENT_LIMIT) {
+      if (!limit || limit < 1) {
+        limit = BASE_FREE_AGENT_LIMIT;
+        settings.freeAgentLimit = limit;
+      }
+    } else {
+      limit = null;
+      freeAgentRenderLimit = null;
+      if (typeof settings.freeAgentLimit === 'number') settings.freeAgentLimit = null;
+    }
+    const visible = limit ? gameState.market.freeAgents.slice(0, Math.min(limit, gameState.market.freeAgents.length)) : gameState.market.freeAgents;
+    const remaining = gameState.market.freeAgents.length - visible.length;
+    const limitControls = remaining > 0 ? `
+      <div class="roster-limit">
+        <div class="muted">${t ? t('msg_roster_partial', { shown: visible.length, total: gameState.market.freeAgents.length }) : `Mostrando ${visible.length} de ${gameState.market.freeAgents.length}`}</div>
+        <div class="row">
+          <button class="btn" data-action="fa-show-more">${t ? t('btn_roster_show_more') : 'Mostrar mais'}</button>
+          <button class="btn" data-action="fa-show-all">${t ? t('btn_roster_show_all') : 'Mostrar tudo'}</button>
+        </div>
+      </div>
+    ` : '';
     ui.freeAgents.innerHTML = `
       <table class="table">
         <thead>
           <tr><th>${t ? t('th_player') : 'Jogador'}</th><th>${t ? t('th_pos') : 'Pos'}</th><th>${t ? t('th_nationality') : 'Nac'}</th><th>${t ? t('th_ovr') : 'OVR'}</th><th>${t ? t('th_age') : 'Idade'}</th><th>${t ? t('th_salary') : 'Salario'}</th><th></th></tr>
         </thead>
         <tbody>
-          ${gameState.market.freeAgents.slice(0, 18).map((player) => `
+          ${visible.map((player) => `
             <tr>
               <td>${player.name}</td>
               <td>${player.pos}</td>
               <td>${player.nationality || '-'}</td>
               <td>${computeOvr ? computeOvr(player) : player.ovr}</td>
               <td>${player.age}</td>
-              <td>${formatMoney ? formatMoney(player.salary) : player.salary}${player.originLeague ? ` • ${player.originLeague.toUpperCase()}` : ''}</td>
+              <td>${formatMoney ? formatMoney(player.salary) : player.salary}${player.originLeague ? ` ? ${player.originLeague.toUpperCase()}` : ''}</td>
               <td><button class="btn" data-action="sign" data-id="${player.id}">${t ? t('btn_sign') : 'Assinar'}</button></td>
             </tr>
           `).join('')}
         </tbody>
       </table>
+      ${limitControls}
       <div class="muted">Elenco atual: ${team.roster.length} jogadores.</div>
     `;
   };
@@ -54,7 +81,7 @@
       return;
     }
     const options = expiring.map((player) => `
-      <option value="${player.id}" data-salary="${player.salary}">${player.name} • ${player.ovr} OVR • ${formatMoney ? formatMoney(player.salary) : player.salary}</option>
+      <option value="${player.id}" data-salary="${player.salary}">${player.name} Â• ${player.ovr} OVR Â• ${formatMoney ? formatMoney(player.salary) : player.salary}</option>
     `).join('');
     const first = expiring[0];
     ui.extensions.innerHTML = `
@@ -95,12 +122,12 @@
     const ui = getUI();
     if (!gameState || !ui.negotiation) return;
     if (!gameState.market.freeAgents.length) {
-      ui.negotiation.innerHTML = '<div class="muted">Sem agentes livres disponíveis.</div>';
+      ui.negotiation.innerHTML = '<div class="muted">Sem agentes livres disponÃ­veis.</div>';
       return;
     }
     const options = gameState.market.freeAgents
       .slice(0, 20)
-      .map((player) => `<option value="${player.id}">${player.name} • OVR ${computeOvr ? computeOvr(player) : player.ovr}</option>`)
+      .map((player) => `<option value="${player.id}">${player.name} Â• OVR ${computeOvr ? computeOvr(player) : player.ovr}</option>`)
       .join('');
     ui.negotiation.innerHTML = `
       <div class="stack">
@@ -135,7 +162,7 @@
     const team = deps.getTeamById(gameState.userTeamId);
     const teams = gameState.teams.filter((t) => t.id !== team.id);
     const teamOptions = teams.map((t) => `<option value="${t.id}">${t.name}</option>`).join('');
-    const ownOptions = team.roster.map((p) => `<option value="${p.id}">${p.name} • ${p.pos} • ${p.ovr}</option>`).join('');
+    const ownOptions = team.roster.map((p) => `<option value="${p.id}">${p.name} Â• ${p.pos} Â• ${p.ovr}</option>`).join('');
     const ownPicks = deps.getPickAssetsForTeam ? deps.getPickAssetsForTeam(team.id, gameState.season) : [];
     const ownPickOptions = ownPicks.map((p) => `<option value="${p.id}">${deps.formatPickLabel(p)}</option>`).join('');
 
@@ -207,7 +234,7 @@
     const updateTargets = () => {
       const targetTeamId = document.getElementById('trade-team').value;
       const targetTeam = deps.getTeamById(targetTeamId);
-      const targetOptions = targetTeam ? targetTeam.roster.map((p) => `<option value="${p.id}">${p.name} • ${p.pos} • ${p.ovr}</option>`).join('') : '';
+      const targetOptions = targetTeam ? targetTeam.roster.map((p) => `<option value="${p.id}">${p.name} Â• ${p.pos} Â• ${p.ovr}</option>`).join('') : '';
       const targetPickOptions = targetTeam && deps.getPickAssetsForTeam
         ? deps.getPickAssetsForTeam(targetTeam.id, gameState.season).map((p) => `<option value="${p.id}">${deps.formatPickLabel(p)}</option>`).join('')
         : '';
@@ -343,7 +370,7 @@
     const scoutLevel = getScoutingLevel ? getScoutingLevel(deps.getTeamById(gameState.userTeamId)) : 0;
     ui.draft.innerHTML = `
       <div class="stack">
-        <div class="badge primary">Rodada ${draftState ? draftState.round : 0} • Pick ${draftState ? draftState.pick : 0}</div>
+        <div class="badge primary">Rodada ${draftState ? draftState.round : 0} Â• Pick ${draftState ? draftState.pick : 0}</div>
         <div>Proximo time: <strong>${nextPickTeam}</strong></div>
       </div>
       <table class="table">
@@ -388,3 +415,4 @@
     renderMarket
   });
 })();
+
