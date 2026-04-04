@@ -164,8 +164,12 @@
   const bindSplashAudio = () => {
     const splash = document.getElementById('splash');
     if (!splash) return;
-    splash.addEventListener('pointerdown', playSplashAudio, { once: true });
-    document.addEventListener('keydown', playSplashAudio, { once: true });
+    const handleSplashInteract = () => {
+      playSplashAudio();
+      hideSplashScreen();
+    };
+    splash.addEventListener('pointerdown', handleSplashInteract, { once: true });
+    document.addEventListener('keydown', handleSplashInteract, { once: true });
   };
 
   const PROFILE_LIST_KEY = 'gm-pro-basketball-profiles';
@@ -4674,7 +4678,6 @@
     }
     registerServiceWorker();
     maybeHydrateTeamSelection();
-    hideSplashScreen();
   };
 
   // ------------------------------
@@ -5384,7 +5387,6 @@
 
   setInterval(ensureOverlayState, 1000);
 
-  window.addEventListener('load', hideSplashScreen);
   window.hideSplashScreen = hideSplashScreen;
 
   boot();

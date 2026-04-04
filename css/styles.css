@@ -53,6 +53,7 @@ body::before {
   z-index: 9999;
   display: grid;
   place-items: center;
+  cursor: pointer;
   background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), transparent 55%),
     radial-gradient(circle at 70% 10%, var(--team-primary-soft), transparent 60%),
     radial-gradient(circle at 80% 85%, var(--team-secondary-soft), transparent 55%),
