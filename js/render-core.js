@@ -166,8 +166,17 @@
   const renderMessages = () => {
     const gameState = getState();
     const ui = getUI();
+    const deps = getDeps();
     if (!gameState || !ui.messages) return;
-    ui.messages.innerHTML = gameState.messages.map((msg) => `<div>${msg}</div>`).join('');
+    const compactMode = deps.isCompactMode ? deps.isCompactMode() : false;
+    const perfMode = deps.isPerformanceMode ? deps.isPerformanceMode() : false;
+    const limit = (compactMode || perfMode) ? 20 : 40;
+    const visible = gameState.messages.slice(0, limit);
+    const remaining = gameState.messages.length - visible.length;
+    ui.messages.innerHTML = `
+      ${remaining > 0 ? `<div class="muted">${t ? t('msg_roster_partial', { shown: visible.length, total: gameState.messages.length }) : `Mostrando ${visible.length} de ${gameState.messages.length}`}</div>` : ''}
+      ${visible.map((msg) => `<div>${msg}</div>`).join('')}
+    `;
   };
 
   const renderHealth = () => {
@@ -1262,13 +1271,18 @@
     const deps = getDeps();
     if (!gameState || !ui.marketHistory) return;
     const team = deps.getTeamById(gameState.userTeamId);
-    const trades = gameState.tradeHistory.slice(0, 8);
+    const compactMode = deps.isCompactMode ? deps.isCompactMode() : false;
+    const perfMode = deps.isPerformanceMode ? deps.isPerformanceMode() : false;
+    const tradeLimit = (compactMode || perfMode) ? 4 : 8;
+    const trades = gameState.tradeHistory.slice(0, tradeLimit);
+    const tradeRemaining = gameState.tradeHistory.length - trades.length;
     const market = window.AppMarket || {};
     const picks = market.getPickAssetsForTeam ? market.getPickAssetsForTeam(team.id, gameState.season) : [];
     const formatPickLabel = market.formatPickLabel || ((pick) => pick.label || '-');
     ui.marketHistory.innerHTML = `
       <div class="stack">
         <div class="badge">${t ? t('label_trade_history') : 'Historico de trocas'}</div>
+        ${tradeRemaining > 0 ? `<div class="muted">${t ? t('msg_roster_partial', { shown: trades.length, total: gameState.tradeHistory.length }) : `Mostrando ${trades.length} de ${gameState.tradeHistory.length}`}</div>` : ''}
         ${trades.length ? trades.map((trade) => {
           const otherTeam = deps.getTeamById(trade.targetTeamId);
           return `

@@ -12,6 +12,10 @@
   const { t, formatMoney } = window.AppText || {};
   const { computeOvr } = window.GameCore || {};
   const { getScoutingLevel, formatScoutedPotential } = window.Scouting || {};
+  const BASE_FREE_AGENT_LIMIT = 18;
+  const BASE_DRAFT_LIMIT = 12;
+  let freeAgentRenderLimit = null;
+  let draftRenderLimit = null;
 
   const renderFreeAgents = () => {
     const gameState = getState();
@@ -368,15 +372,41 @@
     const draftPool = gameState.market.draftPool;
     const nextPickTeam = draftState ? deps.getTeamById(deps.getDraftTeamForPick(draftState)).name : '-';
     const scoutLevel = getScoutingLevel ? getScoutingLevel(deps.getTeamById(gameState.userTeamId)) : 0;
+    const compactMode = deps.isCompactMode ? deps.isCompactMode() : false;
+    const perfMode = deps.isPerformanceMode ? deps.isPerformanceMode() : false;
+    const settings = gameState.settings || {};
+    if (!gameState.settings) gameState.settings = settings;
+    let limit = typeof settings.draftLimit === 'number' ? settings.draftLimit : draftRenderLimit;
+    if ((compactMode || perfMode) && draftPool.length > BASE_DRAFT_LIMIT) {
+      if (!limit || limit < 1) {
+        limit = BASE_DRAFT_LIMIT;
+        settings.draftLimit = limit;
+      }
+    } else {
+      limit = null;
+      draftRenderLimit = null;
+      if (typeof settings.draftLimit === 'number') settings.draftLimit = null;
+    }
+    const visible = limit ? draftPool.slice(0, Math.min(limit, draftPool.length)) : draftPool;
+    const remaining = draftPool.length - visible.length;
+    const limitControls = remaining > 0 ? `
+      <div class="roster-limit">
+        <div class="muted">${t ? t('msg_roster_partial', { shown: visible.length, total: draftPool.length }) : `Mostrando ${visible.length} de ${draftPool.length}`}</div>
+        <div class="row">
+          <button class="btn" data-action="draft-show-more">${t ? t('btn_roster_show_more') : 'Mostrar mais'}</button>
+          <button class="btn" data-action="draft-show-all">${t ? t('btn_roster_show_all') : 'Mostrar tudo'}</button>
+        </div>
+      </div>
+    ` : '';
     ui.draft.innerHTML = `
       <div class="stack">
-        <div class="badge primary">Rodada ${draftState ? draftState.round : 0}  Pick ${draftState ? draftState.pick : 0}</div>
+        <div class="badge primary">Rodada ${draftState ? draftState.round : 0} ? Pick ${draftState ? draftState.pick : 0}</div>
         <div>Proximo time: <strong>${nextPickTeam}</strong></div>
       </div>
       <table class="table">
         <thead><tr><th>Prospecto</th><th>Pos</th><th>OVR</th><th>POT</th><th>Perfil</th><th></th></tr></thead>
         <tbody>
-          ${draftPool.slice(0, 12).map((player) => `
+          ${visible.map((player) => `
             <tr>
               <td>${player.name}</td>
               <td>${player.pos}</td>
@@ -388,6 +418,7 @@
           `).join('')}
         </tbody>
       </table>
+      ${limitControls}
       <div class="muted">O draft segue duas rodadas com ordem inversa na 2a rodada.</div>
       <div class="stack">
         <div class="badge">Ultimos picks</div>

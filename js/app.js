@@ -3441,6 +3441,23 @@
       return;
     }
 
+    if (target.dataset.action === 'draft-show-more') {
+      if (!gameState.settings) gameState.settings = {};
+      if (!gameState.settings.draftLimit) {
+        gameState.settings.draftLimit = 12;
+      }
+      gameState.settings.draftLimit += 12;
+      renderAll();
+      return;
+    }
+
+    if (target.dataset.action === 'draft-show-all') {
+      if (!gameState.settings) gameState.settings = {};
+      gameState.settings.draftLimit = 9999;
+      renderAll();
+      return;
+    }
+
     if (target.dataset.action === 'sign') {
       const playerIndex = gameState.market.freeAgents.findIndex((p) => p.id === target.dataset.id);
       if (playerIndex < 0) return;
